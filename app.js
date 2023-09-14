@@ -1,61 +1,92 @@
-const axios = require('axios');
-const fs = require('fs');
-const csv = require('csv-parser');
+const Moralis = require('moralis');
 
-// Initialize your API keys and endpoints
-const PANCAKESWAP_API_URL = 'https://pancakeswap-api-url.com';
-const DODO_API_URL = 'https://dodo-api-url.com';
+// Initialize Moralis with your API keys
+Moralis.initialize("YOUR_APPLICATION_ID");
+Moralis.serverURL = "YOUR_SERVER_URL";
 
-// Function to fetch exchange rates for two pairs
-async function fetchExchangeRates() {
-  try {
-    const usdtBitcoinRate = await axios.get(`${PANCAKESWAP_API_URL}/api/usdt/bitcoin`);
-    const usdtEthRate = await axios.get(`${DODO_API_URL}/api/usdt/eth`);
-    
-    return {
-      usdtBitcoinRate: usdtBitcoinRate.data,
-      usdtEthRate: usdtEthRate.data,
-    };
-  } catch (error) {
-    console.error('Error fetching exchange rates:', error);
-    throw error;
-  }
-}
+// Constants
+const EXCHANGES = ['PancakeSwap', 'DODO'];
+const PAIRS = [
+  { coin1: 'usdt', coin2: 'bitcoin' },
+  { coin1: 'usdt', coin2: 'eth' }
+];
+const OUTPUT_FILE = 'arbitrage_results.csv';
 
-// Function to find arbitrage opportunities
+// Function to calculate arbitrage opportunities
 async function findArbitrageOpportunities() {
-  try {
-    const exchangeRates = await fetchExchangeRates();
-    const usdtBitcoinRate = exchangeRates.usdtBitcoinRate;
-    const usdtEthRate = exchangeRates.usdtEthRate;
-    
-    // Implement your arbitrage logic here
-    const arbitrageOpportunity = {
-      usdtBitcoinRate,
-      usdtEthRate,
-      arbitrageProfit: usdtBitcoinRate - usdtEthRate, // Replace with your arbitrage formula
-    };
-    
-    // Log the result
-    console.log('Arbitrage Opportunity:', arbitrageOpportunity);
-    
-    // Save the result to a CSV file
-    fs.appendFile('arbitrage_opportunities.csv', `${arbitrageOpportunity}\n`, (err) => {
-      if (err) {
-        console.error('Error saving to CSV:', err);
-      } else {
-        console.log('Result saved to CSV.');
+  const results = [];
+
+  for (const pair of PAIRS) {
+    for (const exchange of EXCHANGES) {
+      // Step 1: Query exchange rates from Moralis or your preferred data source
+      const rateOnExchangeA = await getExchangeRate(exchange, pair.coin1, pair.coin2);
+      const rateOnExchangeB = await getExchangeRate(exchange, pair.coin2, pair.coin1);
+
+      if (rateOnExchangeA && rateOnExchangeB) {
+        // Step 2: Calculate arbitrage opportunity
+        const profit = calculateArbitrageProfit(rateOnExchangeA, rateOnExchangeB);
+
+        if (profit > 0) {
+          results.push({
+            Exchange: exchange,
+            Pair: `${pair.coin1}/${pair.coin2}`,
+            Profit: profit
+          });
+        }
       }
-    });
-  } catch (error) {
-    console.error('Error finding arbitrage opportunities:', error);
+    }
   }
+
+  // Step 3: Save results to a CSV file
+  saveToCSV(results);
+
+  // Step 4: Print results
+  printResults(results);
 }
 
-// Entry point
+// Function to query exchange rates (You need to implement this)
+async function getExchangeRate(exchange, coin1, coin2) {
+  // Implement the logic to fetch exchange rates from Moralis or your preferred source
+  // Example:
+  // const data = await Moralis.Web3API.token.getTokenPrice({
+  //   address: EXCHANGE_ADDRESSES[exchange],
+  //   token_address: COIN_ADDRESSES[coin1],
+  //   chain: 'bsc' // Use the correct blockchain
+  // });
+  // return data.price;
+
+  // Replace this with the actual implementation
+  return 0;
+}
+
+// Function to calculate arbitrage profit
+function calculateArbitrageProfit(rateOnExchangeA, rateOnExchangeB) {
+  // Implement the logic to calculate profit based on rates
+  // Example:
+  // const profit = (rateOnExchangeB - rateOnExchangeA) / rateOnExchangeA;
+  // return profit;
+
+  // Replace this with the actual implementation
+  return 0;
+}
+
+// Function to save results to a CSV file
+function saveToCSV(results) {
+  // Implement CSV file writing logic
+  // Example:
+  // Use the 'fs' module to write data to a CSV file
+}
+
+// Function to print results to the terminal
+function printResults(results) {
+  console.log('Arbitrage Opportunities:');
+  console.log('-------------------------');
+  results.forEach(result => {
+    console.log(`${result.Exchange} - ${result.Pair}: Profit ${result.Profit}`);
+  });
+}
+
+// Main function
 (async () => {
-  // Initialize Moralis or any other necessary setup
-  
-  // Run the arbitrage scan periodically or as needed
-  setInterval(findArbitrageOpportunities, 60000); // Run every minute
+  await findArbitrageOpportunities();
 })();
