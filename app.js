@@ -46,28 +46,28 @@ async function findArbitrageOpportunities() {
 
 // Function to query exchange rates (You need to implement this)
 async function getExchangeRate(exchange, coin1, coin2) {
-  // Implement the logic to fetch exchange rates from Moralis or your preferred source
-  // Example:
-  // const data = await Moralis.Web3API.token.getTokenPrice({
-  //   address: EXCHANGE_ADDRESSES[exchange],
-  //   token_address: COIN_ADDRESSES[coin1],
-  //   chain: 'bsc' // Use the correct blockchain
-  // });
-  // return data.price;
+  //Implement the logic to fetch exchange rates from Moralis or your preferred source
+ // Example:
+  const data = await Moralis.Web3API.token.getTokenPrice({
+    address: EXCHANGE_ADDRESSES[exchange],
+    token_address: COIN_ADDRESSES[coin1],
+    chain: 'bsc' // Use the correct blockchain
+  });
+  return data.price;
 
   // Replace this with the actual implementation
-  return 0;
+ // return 0;
 }
 
 // Function to calculate arbitrage profit
 function calculateArbitrageProfit(rateOnExchangeA, rateOnExchangeB) {
   // Implement the logic to calculate profit based on rates
   // Example:
-  // const profit = (rateOnExchangeB - rateOnExchangeA) / rateOnExchangeA;
-  // return profit;
+  const profit = (rateOnExchangeB - rateOnExchangeA) / rateOnExchangeA;
+  return profit;
 
   // Replace this with the actual implementation
-  return 0;
+ // return 0;
 }
 
 // Function to save results to a CSV file
